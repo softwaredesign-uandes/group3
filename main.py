@@ -4,13 +4,13 @@ def check_row(dictionary, index):
     return
 
 
-def insert_into_block(blocks, coordinates, weight, ores):
+def insert_into_block(blocks, coordinates, weight, minerals):
     check_row(blocks, coordinates['x'])
     check_row(blocks[coordinates['x']], coordinates['y'])
     check_row(blocks[coordinates['x']][coordinates['y']], coordinates['z'])
     blocks[coordinates['x']][coordinates['y']][coordinates['z']] = {
         'weight': weight,
-        'ores': ores
+        'minerals': minerals
     }
 
 
@@ -24,11 +24,11 @@ def load_file(file_name, coordinates, weight, grades):
             'y': split_line[coordinates['y']],
             'z': split_line[coordinates['z']]
         }
-        ores = {}
-        for ore in grades.keys():
-            ores[ore] = split_line[grades[ore]]
+        minerals = {}
+        for mineral in grades.keys():
+            minerals[mineral] = split_line[grades[mineral]]
         line_weight = split_line[weight]
-        insert_into_block(blocks, coords, line_weight, ores)
+        insert_into_block(blocks, coords, line_weight, minerals)
     input_file.close()
 
     return blocks
@@ -55,10 +55,10 @@ def show_block_info(block,units):
     print('')
     print ('Block info: ')
     print ('Weight\t:',block['weight'])
-    if (block['ores']):
+    if (block['minerals']):
 
-        for ore in block['ores'].keys():
-            print (ore,'\t:', block['ores'][ore], units[ore])
+        for mineral in block['minerals'].keys():
+            print (mineral,'\t:', block['minerals'][mineral], units[mineral])
 
 def show_stats(blocks,units):
     total_weight = 0
@@ -76,9 +76,9 @@ def show_stats(blocks,units):
                 total_weight += block_weight
                 blocks_number += 1
 
-                for ore in block['ores'].keys():
-                    ore_metric = float(block['ores'][ore])
-                    ore_unit = units[ore]
+                for mineral in block['minerals'].keys():
+                    ore_metric = float(block['minerals'][mineral])
+                    ore_unit = units[mineral]
                     if ore_unit == 'ppm':
                         total_ore_weight += ore_metric*block_weight/1000000
                     elif ore_unit =='%':
