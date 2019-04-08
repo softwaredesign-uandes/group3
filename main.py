@@ -64,7 +64,7 @@ def show_stats(blocks,units):
     total_weight = 0
     blocks_number = 0
     air_blocks_number = 0
-    total_ore_weight = 0
+    total_mineral_weight = 0
     for x_key in blocks.keys():
         for y_key in blocks[x_key].keys():
             for z_key in blocks[x_key][y_key].keys():
@@ -77,19 +77,19 @@ def show_stats(blocks,units):
                 blocks_number += 1
 
                 for mineral in block['minerals'].keys():
-                    ore_metric = float(block['minerals'][mineral])
-                    ore_unit = units[mineral]
-                    if ore_unit == 'ppm':
-                        total_ore_weight += ore_metric*block_weight/1000000
-                    elif ore_unit =='%':
-                        total_ore_weight += block_weight*float(ore_metric)
+                    mineral_metric = float(block['minerals'][mineral])
+                    mineral_unit = units[mineral]
+                    if mineral_unit == 'ppm':
+                        total_mineral_weight += mineral_metric*block_weight/1000000
+                    elif mineral_unit =='%':
+                        total_mineral_weight += block_weight*float(mineral_metric)
 
 
 
     print ('Statistics: ')
     print ('Total blocks\t: ',blocks_number)
     print ('Total weight\t: ',total_weight)
-    print ('Mineral weight\t: ',total_ore_weight)
+    print ('Mineral weight\t: ',total_mineral_weight)
     print ('Air blocks (%)\t: ',air_blocks_number)
 
 if __name__ == "__main__":
