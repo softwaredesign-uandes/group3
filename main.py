@@ -15,13 +15,13 @@ def load_file(file_name):
     input_file = open(file_name, 'r')
     blocks_as_list_of_parameters = []
     for line in input_file:
-        block_as_list_of_parameters = line.split(' ')
+        block_as_list_of_parameters = line.strip().split(' ')
         blocks_as_list_of_parameters.append(block_as_list_of_parameters)
     input_file.close()
     return blocks_as_list_of_parameters
 
 
-def create_blocks_model(blocks_as_list_of_parameters, coordinates, grades, weight):
+def create_blocks_model(blocks_as_list_of_parameters, coordinates, ores, weight):
     blocks = {}
     for block_as_list_of_parameters in blocks_as_list_of_parameters:
         block_coords = {
@@ -31,8 +31,8 @@ def create_blocks_model(blocks_as_list_of_parameters, coordinates, grades, weigh
         }
 
         block_minerals = {}
-        for mineral in grades.keys():
-            block_minerals[mineral] = block_as_list_of_parameters[grades[mineral]]
+        for mineral in ores.keys():
+            block_minerals[mineral] = block_as_list_of_parameters[ores[mineral]]
         block_weight = block_as_list_of_parameters[weight]
         block = dict(minerals=block_minerals, weight=block_weight)
         insert_into_blocks(blocks, block, block_coords)
@@ -42,18 +42,18 @@ def create_blocks_model(blocks_as_list_of_parameters, coordinates, grades, weigh
 def load_file_menu():
     file_name = input('Enter the file name: ')
     coordinates = {}
-    grades = {}
+    ores = {}
     coordinates['x'] = int(input('Enter the position of the x coordinate: '))
     coordinates['y'] = int(input('Enter the position of the y coordinate: '))
     coordinates['z'] = int(input('Enter the position of the z coordinate: '))
     weight = int(input('Enter the position of the weight parameter: '))
-    number_of_grades = int(input('Enter the quantity of grades for the blocks: '))
+    number_of_ores = int(input('Enter the quantity of ores for the blocks: '))
     units = {}
-    for grade in range(number_of_grades):
-        grade_name = input('Enter the name for the grade: ')
-        grades[grade_name] = int(input('Enter the coordinate for the grade: '))
-        units[grade_name] = input('Enter the units for the grade (ppm or %):')
-    return file_name, coordinates, weight, grades, units
+    for ore in range(number_of_ores):
+        ore_name = input('Enter the name for the ore: ')
+        ores[ore_name] = int(input('Enter the coordinate for the ore: '))
+        units[ore_name] = input('Enter the units for the ore (ppm or %):')
+    return file_name, coordinates, weight, ores, units
 
 
 def show_block_info(block, units):
@@ -98,11 +98,11 @@ def get_stats(blocks, units):
 
 
 if __name__ == "__main__":
-    file_name, coordinates, weight, grades, units = load_file_menu()
+    file_name, coordinates, weight, ores, units = load_file_menu()
     blocks_as_list_of_parameters = load_file(file_name)
     blocks = create_blocks_model(blocks_as_list_of_parameters=blocks_as_list_of_parameters,
                                  coordinates=coordinates,
-                                 grades=grades,
+                                 ores=ores,
                                  weight=weight)
 
     while True:
