@@ -15,7 +15,7 @@ def load_file(file_name):
     input_file = open(file_name, 'r')
     blocks_as_list_of_parameters = []
     for line in input_file:
-        block_as_list_of_parameters = line.split(' ')
+        block_as_list_of_parameters = line.strip().split(' ')
         blocks_as_list_of_parameters.append(block_as_list_of_parameters)
     input_file.close()
     return blocks_as_list_of_parameters
