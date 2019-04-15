@@ -65,6 +65,21 @@ def show_block_info(block, units):
         for mineral in block['minerals'].keys():
             print (mineral, '\t:', block['minerals'][mineral], units[mineral])
 
+def get_block_mineral_weight(block, units):
+    block_weight = get_block_weight(block)
+    mineral_weight = 0
+    for mineral in block['minerals'].keys():
+        mineral_metric = float(block['minerals'][mineral])
+        mineral_unit = units[mineral]
+        if mineral_unit == 'ppm':
+            mineral_weight += mineral_metric * block_weight / 1000000
+        elif mineral_unit == '%':
+            mineral_weight += block_weight * (mineral_metric/100.0)
+    return mineral_weight
+
+def get_block_weight(block):
+    block_weight = float(block['weight'])
+    return block_weight
 
 def get_stats(blocks, units):
     total_weight = 0
@@ -75,21 +90,15 @@ def get_stats(blocks, units):
         for y_key in blocks[x_key].keys():
             for z_key in blocks[x_key][y_key].keys():
                 block = blocks[x_key][y_key][z_key]
-                block_weight = float(block['weight'])
-                if block_weight == 0:
-                    air_blocks_number += 1
+                block_weight = get_block_weight(block)
 
                 total_weight += block_weight
+                if block_weight == 0:
+                    air_blocks_number += 1
                 blocks_number += 1
 
-                for mineral in block['minerals'].keys():
-                    mineral_metric = float(block['minerals'][mineral])
-                    mineral_unit = units[mineral]
-                    if mineral_unit == 'ppm':
-                        total_mineral_weight += mineral_metric * block_weight / 1000000
-                    elif mineral_unit == '%':
-                        total_mineral_weight += block_weight * float(mineral_metric)
-
+                block_mineral_weight = get_block_mineral_weight(block,units)
+                total_mineral_weight += block_mineral_weight
     return dict(
         blocks_number=blocks_number,
         total_weight=total_weight,
