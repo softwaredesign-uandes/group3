@@ -4,33 +4,38 @@ def check_row(dictionary, index):
     return
 
 
-def insert_into_block(blocks, coordinates, weight, minerals):
+def insert_into_blocks(blocks, block, coordinates):
     check_row(blocks, coordinates['x'])
     check_row(blocks[coordinates['x']], coordinates['y'])
     check_row(blocks[coordinates['x']][coordinates['y']], coordinates['z'])
-    blocks[coordinates['x']][coordinates['y']][coordinates['z']] = {
-        'weight': weight,
-        'minerals': minerals
-    }
+    blocks[coordinates['x']][coordinates['y']][coordinates['z']] = block
 
 
-def load_file(file_name, coordinates, weight, grades):
-    blocks = {}
+def load_file(file_name):
     input_file = open(file_name, 'r')
+    blocks_as_list_of_parameters = []
     for line in input_file:
-        split_line = line.split(' ')
-        coords = {
-            'x': split_line[coordinates['x']],
-            'y': split_line[coordinates['y']],
-            'z': split_line[coordinates['z']]
-        }
-        minerals = {}
-        for mineral in grades.keys():
-            minerals[mineral] = split_line[grades[mineral]]
-        line_weight = split_line[weight]
-        insert_into_block(blocks, coords, line_weight, minerals)
+        block_as_list_of_parameters = line.split(' ')
+        blocks_as_list_of_parameters.append(block_as_list_of_parameters)
     input_file.close()
+    return blocks_as_list_of_parameters
 
+
+def create_blocks_model(blocks_as_list_of_parameters, coordinates, grades, weight):
+    blocks = {}
+    for block_as_list_of_parameters in blocks_as_list_of_parameters:
+        block_coords = {
+            'x': block_as_list_of_parameters[coordinates['x']],
+            'y': block_as_list_of_parameters[coordinates['y']],
+            'z': block_as_list_of_parameters[coordinates['z']]
+        }
+
+        block_minerals = {}
+        for mineral in grades.keys():
+            block_minerals[mineral] = block_as_list_of_parameters[grades[mineral]]
+        block_weight = block_as_list_of_parameters[weight]
+        block = dict(minerals=block_minerals, weight=block_weight)
+        insert_into_blocks(blocks, block, block_coords)
     return blocks
 
 
@@ -47,20 +52,21 @@ def load_file_menu():
     for grade in range(number_of_grades):
         grade_name = input('Enter the name for the grade: ')
         grades[grade_name] = int(input('Enter the coordinate for the grade: '))
-        units[grade_name] = input ('Enter the units for the grade (ppm or %):')
+        units[grade_name] = input('Enter the units for the grade (ppm or %):')
     return file_name, coordinates, weight, grades, units
 
 
-def show_block_info(block,units):
+def show_block_info(block, units):
     print('')
     print ('Block info: ')
-    print ('Weight\t:',block['weight'])
+    print ('Weight\t:', block['weight'])
     if (block['minerals']):
 
         for mineral in block['minerals'].keys():
-            print (mineral,'\t:', block['minerals'][mineral], units[mineral])
+            print (mineral, '\t:', block['minerals'][mineral], units[mineral])
 
-def show_stats(blocks,units):
+
+def get_stats(blocks, units):
     total_weight = 0
     blocks_number = 0
     air_blocks_number = 0
@@ -80,34 +86,42 @@ def show_stats(blocks,units):
                     mineral_metric = float(block['minerals'][mineral])
                     mineral_unit = units[mineral]
                     if mineral_unit == 'ppm':
-                        total_mineral_weight += mineral_metric*block_weight/1000000
-                    elif mineral_unit =='%':
-                        total_mineral_weight += block_weight*float(mineral_metric)
+                        total_mineral_weight += mineral_metric * block_weight / 1000000
+                    elif mineral_unit == '%':
+                        total_mineral_weight += block_weight * float(mineral_metric)
 
+    return dict(
+        blocks_number=blocks_number,
+        total_weight=total_weight,
+        total_mineral_weight=total_mineral_weight,
+        air_blocks_number=air_blocks_number)
 
-
-    print ('Statistics: ')
-    print ('Total blocks\t: ',blocks_number)
-    print ('Total weight\t: ',total_weight)
-    print ('Mineral weight\t: ',total_mineral_weight)
-    print ('Air blocks (%)\t: ',air_blocks_number)
 
 if __name__ == "__main__":
     file_name, coordinates, weight, grades, units = load_file_menu()
-    blocks = load_file(file_name, coordinates, weight, grades)
+    blocks_as_list_of_parameters = load_file(file_name)
+    blocks = create_blocks_model(blocks_as_list_of_parameters=blocks_as_list_of_parameters,
+                                 coordinates=coordinates,
+                                 grades=grades,
+                                 weight=weight)
+
     while True:
-        option = int(input ('[1] Search for file\n '
-                        '[2] Show blocks satistics\n'
-                        '\n'
-                        'Insert an option: '))
+        option = int(input('[1] Search for block\n '
+                           '[2] Show blocks satistics\n'
+                           '\n'
+                           'Insert an option: '))
         if option == 1:
             input_to_search = input('Insert x,y,z to search for block info (eg 0,1,0): ')
-            x, y, z = [(index) for index in input_to_search.split(',')]
+            x, y, z = [index for index in input_to_search.split(',')]
             block = blocks[x][y][z]
-            show_block_info(block,units)
+            show_block_info(block, units)
 
         elif option == 2:
-            show_stats(blocks,units )
 
+            stats = get_stats(blocks, units)
+            print ('Statistics: ')
+            print ('Total blocks\t: ', stats['blocks_number'])
+            print ('Total weight\t: ', stats['total_weight'])
+            print ('Mineral weight\t: ', stats['total_mineral_weight'])
+            print ('Air blocks (%)\t: ', stats['air_blocks_number'])
         break
-
