@@ -1,7 +1,7 @@
 import unittest
 import sys
 import mock
-import math.inf as inf
+
 
 sys.path.append('.')
 from main import get_max_coords_of_model
@@ -11,7 +11,7 @@ class GetMaxCoordsOfModelTestCase(unittest.TestCase):
 
     def test_max_coords_of_a_void_model(self):
         block_model={}
-        x_result, y_result, z_result = -inf,-inf,-inf
+        x_result, y_result, z_result = None,None,None
         x_max, y_max, z_max = get_max_coords_of_model(block_model)
         self.assertEqual(x_max, x_result)
         self.assertEqual(y_max, y_result)
