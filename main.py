@@ -12,9 +12,10 @@ def insert_into_blocks(blocks, block, coordinates):
 
 
 def get_max_coords_of_model(model):
-    x_max = 0
-    y_max = 0
-    z_max = 0
+    void_value = -1
+    x_max = void_value
+    y_max = void_value
+    z_max = void_value
     for x_str in model.keys():
         for y_str in model[x_str].keys():
             for z_str in model[x_str][y_str].keys():
