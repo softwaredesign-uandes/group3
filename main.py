@@ -11,6 +11,25 @@ def insert_into_blocks(blocks, block, coordinates):
     blocks[coordinates['x']][coordinates['y']][coordinates['z']] = block
 
 
+def get_max_coords_of_model(model):
+    x_max = 0
+    y_max = 0
+    z_max = 0
+    for x_str in model.keys():
+        for y_str in model[x_str].keys():
+            for z_str in model[x_str][y_str].keys():
+                x = int(x_str)
+                y = int(y_str)
+                z = int(z_str)
+
+                if x > x_max:
+                    x_max = x
+                if y > y_max:
+                    y_max = y
+                if z > z_max:
+                    z_max = z
+    return x_max,y_max,z_max
+
 def load_file(file_name):
     input_file = open(file_name, 'r')
     blocks_as_list_of_parameters = []
