@@ -1,10 +1,8 @@
 import unittest
 import sys
-import mock
 sys.path.append('.')
 import main
 from main import get_stats, get_block_mineral_weight, get_block_weight
-from mock import MagicMock
 
 
 class GetStatsTestCase(unittest.TestCase):
