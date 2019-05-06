@@ -16,56 +16,54 @@ def get_block(block_model,x,y,z):
         return None
     return block_model[x][y][z]
 
+def get_valid_references(max_value,reblock_size):
+    valid_x_references = filter(lambda x: x <= max_value, map(lambda x: x * reblock_size, range(0, max_value+1)))
+    return list(valid_x_references)
+
 def reblock(blocks, reblock_size_x, reblock_size_in_y, reblock_size_in_z,units):
     x_max, y_max, z_max = get_max_coords_of_model(blocks)
-    x_reference = 0
-    y_reference = 0
-    z_reference = 0
 
-    pass_limit = False
-
-    new_block_x = 0
-    new_block_y = 0
-    new_block_z = 0
     new_blocks = {}
-    while not pass_limit:
 
-        x_end_block = x_reference + reblock_size_x
-        y_end_block = y_reference + reblock_size_in_y
-        z_end_block = y_reference + reblock_size_in_z
+    valid_x_references = get_valid_references(x_max,reblock_size_x)
+    valid_y_references = get_valid_references(y_max, reblock_size_in_y)
+    valid_z_references = get_valid_references(z_max, reblock_size_in_z)
+    for new_block_x, x_reference in enumerate(valid_x_references):
+        for new_block_y, y_reference in enumerate(valid_y_references):
+            for new_block_z, z_reference in enumerate(valid_z_references):
+                x_end_block = x_reference + reblock_size_x
+                y_end_block = y_reference + reblock_size_in_y
+                z_end_block = z_reference + reblock_size_in_z
 
-        new_block_coordinates = {'x':new_block_x, 'y':new_block_y, 'z':new_block_z}
-        new_block_weight = 0
-        new_block_minerals ={}
-        new_block ={}
-        for x in range(x_reference, x_end_block):
-            for y in range(y_reference, y_end_block):
-                for z in range(z_reference, z_end_block):
-                    block = get_block(blocks,x,y,z)
-                    if block is None:
-                        continue
+                new_block_coordinates = {'x': str(new_block_x), 'y': str(new_block_y), 'z': str(new_block_z)}
+                new_block_weight = 0
+                new_block_minerals = {}
+                new_block = {}
+                involved_blocks = 0
 
-                    block_weight = get_block_weight(block)
-                    new_block_weight += block_weight
+                for x in range(x_reference, x_end_block):
+                    for y in range(y_reference, y_end_block):
+                        for z in range(z_reference, z_end_block):
+                            block = get_block(blocks,x,y,z)
+                            if block is None:
+                                continue
+                            involved_blocks += 1
+                            block_weight = get_block_weight(block)
+                            new_block_weight += block_weight
 
-                    for mineral in block['minerals'].keys():
-                        mineral_weight = get_portion(block_weight,block['minerals'][mineral],units[mineral])
-                        if mineral not in new_block_minerals.keys():
-                            new_block_minerals[mineral]= 0
-                        new_block_minerals[mineral] += mineral_weight
+                            for mineral in block['minerals'].keys():
+                                mineral_weight = Decimal(block['minerals'][mineral])
+                                if mineral not in new_block_minerals.keys():
+                                    new_block_minerals[mineral]= 0
+                                new_block_minerals[mineral] += mineral_weight
 
-        new_block['minerals'] = new_block_minerals
-        new_block['weight'] = new_block_weight
-        insert_into_blocks(new_blocks,new_block,new_block_coordinates)
-        new_block_x += 1
-        new_block_y += 1
-        new_block_z += 1
+                involved_blocks = 1 if involved_blocks == 0 else involved_blocks
+                new_block['minerals'] = new_block_minerals
+                for mineral in new_block['minerals'].keys():
+                    new_block['minerals'][mineral] = str(new_block['minerals'][mineral]/involved_blocks)
+                new_block['weight'] = str(new_block_weight)
+                insert_into_blocks(new_blocks,new_block,new_block_coordinates)
 
-        x_reference += reblock_size_x
-        y_reference += reblock_size_in_y
-        z_reference += reblock_size_in_z
-        pass_limit = x_reference > x_max or y_reference > y_max or z_reference > z_max
-    print (new_blocks)
     return new_blocks
 
 
