@@ -1,4 +1,6 @@
 from decimal import *
+from functools import reduce
+from itertools import product
 def check_row(dictionary, index):
     if index not in dictionary.keys():
         dictionary[index] = {}
@@ -29,33 +31,32 @@ def reblock(blocks, reblock_size_x, reblock_size_in_y, reblock_size_in_z,units):
     valid_y_references = get_valid_references(y_max, reblock_size_in_y)
     valid_z_references = get_valid_references(z_max, reblock_size_in_z)
     for new_block_x, x_reference in enumerate(valid_x_references):
+        x_end_block = x_reference + reblock_size_x
         for new_block_y, y_reference in enumerate(valid_y_references):
+            y_end_block = y_reference + reblock_size_in_y
             for new_block_z, z_reference in enumerate(valid_z_references):
-                x_end_block = x_reference + reblock_size_x
-                y_end_block = y_reference + reblock_size_in_y
+
                 z_end_block = z_reference + reblock_size_in_z
 
                 new_block_coordinates = {'x': str(new_block_x), 'y': str(new_block_y), 'z': str(new_block_z)}
-                new_block_weight = 0
-                new_block_minerals = {}
                 new_block = {}
-                involved_blocks = 0
+                blocks_indexes = list(product(range(x_reference,x_end_block),range(y_reference,y_end_block), range(z_reference,z_end_block)))
 
-                for x in range(x_reference, x_end_block):
-                    for y in range(y_reference, y_end_block):
-                        for z in range(z_reference, z_end_block):
-                            block = get_block(blocks,x,y,z)
-                            if block is None:
-                                continue
-                            involved_blocks += 1
-                            block_weight = get_block_weight(block)
-                            new_block_weight += block_weight
+                blocks_batch = list(map(lambda block_index: get_block(blocks,block_index[0],block_index[1],block_index[2]), blocks_indexes))
+                not_none_blocks = list(filter(lambda block: block is not None, blocks_batch))
+                blocks_with_mineral = filter(lambda block: len(block['minerals'].keys()) > 0, not_none_blocks)
+                involved_blocks = len(list(blocks_with_mineral))
+                block_weights = list(map(lambda block: get_block_weight(block), not_none_blocks))
+                new_block_weight = reduce(lambda block_weight, total: block_weight + total, block_weights)
+                new_block_minerals = {}
 
-                            for mineral in block['minerals'].keys():
-                                mineral_weight = Decimal(block['minerals'][mineral])
-                                if mineral not in new_block_minerals.keys():
-                                    new_block_minerals[mineral]= 0
-                                new_block_minerals[mineral] += mineral_weight
+
+                for block in not_none_blocks:
+                    minerals = block['minerals']
+
+                    for mineral in minerals.keys():
+                        new_block_minerals[mineral] = new_block_minerals.get(mineral, 0)+Decimal(minerals[mineral])
+
 
                 involved_blocks = 1 if involved_blocks == 0 else involved_blocks
                 new_block['minerals'] = new_block_minerals
@@ -177,19 +178,26 @@ def get_stats(blocks, units):
     blocks_number = 0
     air_blocks_number = 0
     total_mineral_weight = 0
+
+    blocks_indexes = map(lambda x_key: [x_key] + blocks[x_key].keys(),blocks.keys())
+
     for x_key in blocks.keys():
+        x_keys = blocks.keys()
+        _ = list(map(lambda x_key: list(product(x_key,blocks[x_key])),x_keys))
+        xy_indexes = reduce(lambda index,total: index+total,_ )
+        __ = list(map(lambda xy_index: list(product(xy_index, blocks[xy_index[0]][xy_index[1]].keys())),xy_indexes))
+        y_keys = blocks[x_key].keys()
+        z_keys = list(map(lambda y_key: list(product(y_key,blocks[x_key][y_key])),y_keys))
+
         for y_key in blocks[x_key].keys():
-            for z_key in blocks[x_key][y_key].keys():
-                block = blocks[x_key][y_key][z_key]
-                block_weight = get_block_weight(block)
+            blocks_ = list(map(lambda z_key: blocks[x_key][y_key][z_key],blocks[x_key][y_key].keys()))
+            block_weights = list(map(lambda block: get_block_weight(block), blocks_))
+            total_weight += reduce(lambda w,total: w+total, block_weights)
+            air_blocks_number += block_weights.count(0)
+            blocks_number += len(blocks_)
+            block_mineral_weights = list(map(lambda block: get_block_mineral_weight(block,units),blocks_))
+            total_mineral_weight += reduce(lambda w,total: w+total,block_mineral_weights)
 
-                total_weight += block_weight
-                if block_weight == 0:
-                    air_blocks_number += 1
-                blocks_number += 1
-
-                block_mineral_weight = get_block_mineral_weight(block,units)
-                total_mineral_weight += block_mineral_weight
     return dict(
         blocks_number=blocks_number,
         total_weight=total_weight,
