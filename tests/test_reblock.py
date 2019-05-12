@@ -8,8 +8,9 @@ from main import reblock
 
 class GetMaxCoordsOfModelTestCase(unittest.TestCase):
     def setUp(self):
-
+        self.maxDiff = None
         self.units = {'copper': '%', 'cu': '%'}
+        self.filled_model_units = {'cu': '%'}
         self.block_model_filled = {'0':
                                        {'0':
                                             {'0':
@@ -163,6 +164,7 @@ class GetMaxCoordsOfModelTestCase(unittest.TestCase):
                                                  {'weight': '500', 'minerals': {'cu': '50'}}}
                                         }
                                    }
+        self.air_model_units = {'copper': '%'}
         self.block_model_with_air = {
             '0': {
                 '0': {
@@ -405,7 +407,8 @@ class GetMaxCoordsOfModelTestCase(unittest.TestCase):
     def test_small_reblock_factor_and_filled_model(self):
         block_model = self.block_model_filled
         expected_block_model = block_model
-        reblocked_model = reblock(block_model, 1, 1, 1, self.units)
+
+        reblocked_model = reblock(block_model, 1, 1, 1, self.filled_model_units)
         self.assertEqual(expected_block_model, reblocked_model)
 
     # def test_small_reblock_factor_and_model_with_air(self):
@@ -423,7 +426,7 @@ class GetMaxCoordsOfModelTestCase(unittest.TestCase):
     #     self.assertEqual(expected_reblocked_model, reblocked_model)
 
     def test_reblock_weight(self):
-        reblocked_model = reblock(self.block_model_with_air, 100, 100, 100, self.units)
+        reblocked_model = reblock(self.block_model_with_air, 20, 20, 20, self.air_model_units)
         expected_total_weight = str(
             72360 + 72360 + Decimal('72240.00781') + Decimal('71670.01563') + Decimal('71550.01563'))
         total_weight = reblocked_model['0']['0']['0']['weight']
@@ -431,9 +434,9 @@ class GetMaxCoordsOfModelTestCase(unittest.TestCase):
 
     def test_reblock_with_ppm_units(self):
         units = {'copper': 'ppm'}
-        reblocked_model = reblock(self.block_model_with_air, 100, 100, 100, units)
-        expected_total_copper = str((Decimal('10') + Decimal('30') + Decimal('50') + Decimal('70') + Decimal('0')) / 5)
-        total_copper = reblocked_model['0']['0']['0']['minerals']['copper']
+        reblocked_model = reblock(self.block_model_with_air, 20, 20, 20, units)
+        expected_total_copper = (Decimal('10') + Decimal('30') + Decimal('50') + Decimal('70') ) / 4
+        total_copper = Decimal(reblocked_model['0']['0']['0']['minerals']['copper'])
         self.assertEqual(expected_total_copper, total_copper)
 
     def test_reblock_void_model(self):
@@ -444,9 +447,9 @@ class GetMaxCoordsOfModelTestCase(unittest.TestCase):
 
     def test_reblock_with_percentage_units(self):
         units = {'copper': '%'}
-        reblocked_model = reblock(self.block_model_with_air, 100, 100, 100, units)
-        expected_total_copper = str((Decimal('10') + Decimal('30') + Decimal('50') + Decimal('70') + Decimal('0')) / 5)
-        total_copper = reblocked_model['0']['0']['0']['minerals']['copper']
+        reblocked_model = reblock(self.block_model_with_air, 20, 20, 20, units)
+        expected_total_copper = (Decimal('10') + Decimal('30') + Decimal('50') + Decimal('70') ) / 4
+        total_copper = Decimal(reblocked_model['0']['0']['0']['minerals']['copper'])
 
         self.assertEqual(expected_total_copper, total_copper)
 
@@ -505,8 +508,8 @@ class GetMaxCoordsOfModelTestCase(unittest.TestCase):
             }
         }
 
-        units = {'copper': '%', 'au': '%'}
-        block_model = reblock(block_model, 100, 100, 100, units)
+        units = {'copper': '%'}
+        block_model = reblock(block_model, 20, 20, 20, units)
         total_weight = str(72360 + 72360 + Decimal('72240.00781') + Decimal('71670.01563') + Decimal('71550.01563'))
 
         total_copper = str((Decimal(71550) + Decimal(71670) + Decimal(72240) + Decimal(72360) + Decimal(72360)) / 5)
