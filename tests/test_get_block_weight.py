@@ -1,6 +1,5 @@
 import unittest
 import sys
-import mock
 sys.path.append('.')
 from main import get_block_mineral_weight, get_block_weight
 
