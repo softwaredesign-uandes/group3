@@ -1,4 +1,4 @@
-from decimal import *
+import decimal
 from functools import reduce
 from itertools import product
 
@@ -48,7 +48,7 @@ def get_blocks_from_reference_until_stop(model, start_reference, step_references
 
 
 def get_mineral(block, mineral_name):
-    return Decimal(block['minerals'][mineral_name])
+    return decimal.decimal.Decimal(block['minerals'][mineral_name])
 
 
 def transform_blocks_batch_to_one_block(blocks, units):
@@ -105,8 +105,8 @@ def insert_into_blocks(blocks, block, coordinates):
 
 
 def get_portion(block_weight, mineral_weight, unit):
-    block_weight = Decimal(block_weight)
-    mineral_weight = Decimal(mineral_weight)
+    block_weight = decimal.decimal.Decimal(block_weight)
+    mineral_weight = decimal.decimal.Decimal(mineral_weight)
     if unit == '%':
         return block_weight * mineral_weight / 100
     elif unit == 'ppm':
@@ -215,7 +215,7 @@ def get_block_mineral_weight(block, units):
 def get_block_weight(block):
     if 'weight' not in block.keys():
         return 0
-    block_weight = Decimal(block['weight'])
+    block_weight = decimal.Decimal(block['weight'])
     return block_weight
 
 
