@@ -1,4 +1,4 @@
-from flask import Flask, abort, request
+from flask import Flask, abort, request, render_template, send_from_directory
 import json
 from block import Block
 from block_model import BlockModel
@@ -6,10 +6,14 @@ from api_utils import *
 from block_container import BlockContainer
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 block_models = []
 mineral_deposits = {}
 
+
+@app.route('/files/<path:path>')
+def send_js(path):
+    return send_from_directory('files', path)
 
 @app.route('/block_models/', methods=['GET'])
 def get_block_models():
@@ -87,7 +91,6 @@ def create_block_model():
     ))
     block_model = BlockModel()
     block_model.replace_blocks(blocks)
-    block_model.reblock(0,0,0)
     block_models.append(block_model)
 
     for mineral_deposit in mineral_names:
@@ -122,3 +125,13 @@ def get_block_model_block(block_model_id, block_id):
             block=block.__dict__
         )
     )
+
+@app.route('/block_models/<int:block_model_id>/show/', methods=['GET'])
+def render_blocks(block_model_id):
+    if block_model_id >= len(block_models):
+        abort(404)
+    blocks=list(map(
+        lambda block: block.__dict__(),
+        block_models[block_model_id].blocks
+    ))
+    return render_template('blocks.html', blocks=blocks)

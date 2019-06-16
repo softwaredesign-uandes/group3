@@ -53,7 +53,8 @@ class BlockModel:
         return blocks_by_id[id]
 
     def reblock(self, reblock_x, reblock_y, reblock_z):
-        #max_x = max(map(lambda block: block.x_index, self.blocks))
-        #max_y = max(map(lambda block: block.y_index, self.blocks))
-        #max_z = max(map(lambda block: block.z_index, self.blocks))
+        max_x = max(map(lambda block: block.x_index, self.blocks))
+        max_y = max(map(lambda block: block.y_index, self.blocks))
+        max_z = max(map(lambda block: block.z_index, self.blocks))
+        new_blocks = []
         self.blocks = [self.blocks[0].join_blocks(self.blocks[1:])]

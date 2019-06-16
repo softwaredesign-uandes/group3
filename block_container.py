@@ -19,7 +19,7 @@ class BlockContainer:
             y_index=self.y_index,
             z_index=self.z_index,
             weight=self.weight,
-            minerals=self.minerals
+            grades=self.minerals
         )
 
     def id(self, max_x, max_y):
@@ -40,6 +40,7 @@ class BlockContainer:
     def minerals(self):
         minerals = {}
         total_weight = self.weight
+        total_weight = total_weight if total_weight > 0 else 1
         for block in self.blocks:
             for mineral in block.minerals:
                 if mineral not in minerals.keys():
