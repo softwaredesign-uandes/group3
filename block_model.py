@@ -1,5 +1,6 @@
 import operator
 from functools import reduce
+from block_container import BlockContainer
 
 
 class BlockModel:
@@ -9,7 +10,7 @@ class BlockModel:
         self.blocks = []
 
     def insert_block(self, block):
-        self.blocks.append(block)
+        self.blocks.append(BlockContainer(block))
 
     def replace_blocks(self, blocks):
         self.blocks = blocks
@@ -22,6 +23,10 @@ class BlockModel:
 
     def num_blocks(self):
         return len(self.blocks)
+
+    def air_blocks_percentage(self):
+        air_blocks = list(filter(lambda block: block.weight == 0, self.blocks))
+        return len(air_blocks)/len(self.blocks)
 
     def mineral_weight(self):
         block_minerals = list(map(
@@ -47,3 +52,8 @@ class BlockModel:
             return None
         return blocks_by_id[id]
 
+    def reblock(self, reblock_x, reblock_y, reblock_z):
+        #max_x = max(map(lambda block: block.x_index, self.blocks))
+        #max_y = max(map(lambda block: block.y_index, self.blocks))
+        #max_z = max(map(lambda block: block.z_index, self.blocks))
+        self.blocks = [self.blocks[0].join_blocks(self.blocks[1:])]

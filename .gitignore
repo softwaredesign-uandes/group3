@@ -1,4 +1,4 @@
-
+.vscode/
 # Created by https://www.gitignore.io/api/osx,linux,macos,django,python,windows,pycharm,jetbrains,pycharm+all,pycharm+iml,sublimetext,jetbrains+all,jetbrains+iml
 # Edit at https://www.gitignore.io/?templates=osx,linux,macos,django,python,windows,pycharm,jetbrains,pycharm+all,pycharm+iml,sublimetext,jetbrains+all,jetbrains+iml
 
@@ -640,3 +640,4 @@ $RECYCLE.BIN/
 
 # Project Specific
 *.blocks
+.vscode/settings.json
