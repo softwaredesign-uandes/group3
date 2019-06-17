@@ -134,4 +134,5 @@ def render_blocks(block_model_id):
         lambda block: block.__dict__(),
         block_models[block_model_id].blocks
     ))
-    return render_template('blocks.html', blocks=blocks)
+    mineral_keys=list(block_models[block_model_id].mineral_weight().keys())
+    return render_template('blocks.html', blocks=blocks, minerals=mineral_keys)

@@ -16,6 +16,11 @@
 		</style>
 	</head>
 	<body>
+		<button onclick="setTransparent()">Transparent</button>
+		{% for mineral in minerals %}
+			<button onclick="setColor('{{mineral}}')">{{mineral}}</button>
+		{% endfor %}
+		<p id="gradeInfo">Grades: </p>
 
 		<script src="{{url_for('static', filename='three.js')}}"></script>
 		<script src="{{url_for('static', filename='orbitControls.js')}}"></script>
@@ -38,8 +43,29 @@
 			var blocks;
 			var blockSize = 50;
 
-			var currentGrade = "cu";
+			var currentGrade = "{{minerals[0]}}";
 			var transparent = false;
+			baseHue = 50
+			var gradeColors = {};
+			{{minerals|tojson}}.forEach(grade => {
+				gradeColors[grade] = baseHue;
+				baseHue += 50;	
+			});
+
+			var raycaster = new THREE.Raycaster();
+			var mouse = new THREE.Vector2();
+
+			function onDocumentMouseDown( event ) {
+				event.preventDefault();
+				mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+				raycaster.setFromCamera( mouse, camera );
+				var intersects = raycaster.intersectObjects( scene.children );
+				if ( intersects.length > 0 ) {
+					intersects[1].object.callback();
+				}
+			}
+
 
 			init();
 			animate();
@@ -87,11 +113,17 @@
 					var cubeMaterial = new THREE.MeshLambertMaterial( { color: getBlockColor(block), 
 						opacity: Math.max(0.02, block.grades[currentGrade]), transparent: transparent } );
 					var blockMesh = new THREE.Mesh( cubeGeometry, cubeMaterial );
+
+					blockMesh.callback = function() {
+						var info = document.getElementById("gradeInfo");
+						info.innerHTML = "Grades: " + JSON.stringify(block.grades);
+					}
 					
 					var blockSizeWithOffset = blockSize * 1.1;
 					blockMesh.position.set( blockSizeWithOffset * block.x_index,
 						blockSizeWithOffset * block.y_index, blockSizeWithOffset * block.z_index);
 					blockMeshes.push(blockMesh);
+					
 		
 					scene.add( blockMesh );
 					
@@ -100,7 +132,7 @@
 				function getBlockColor(block) {
 					if (block.grades[currentGrade] < 0.001)
 						return new THREE.Color(0x999999);
-					var hue = currentGrade == "cu" ? 168 : 50;
+					var hue = gradeColors[currentGrade];
 					var lightning = Math.floor(block.grades[currentGrade] * 70);
 					var hsl = "hsl("+ hue + ", 100%, " + lightning + "%)";
 					return new THREE.Color(hsl);
@@ -134,7 +166,7 @@
 
 			function setEventListeners() {
 				window.addEventListener( 'resize', onWindowResize, false );
-				document.addEventListener( 'keydown', onDocumentKeyDown, false );
+				window.addEventListener('click', onDocumentMouseDown, false);
 			}
 
 			function clearScene() {
@@ -152,22 +184,14 @@
 
 			}
 
-			function onDocumentKeyDown( event ) {
-				switch ( event.keyCode ) {
-					case 65: //a
-						currentGrade = "au";
-						loadBlockModel();
-						break;
-					case 67: //c
-						currentGrade = "cu";
-						loadBlockModel();
-						break;
-					case 84: //t
-						transparent = !transparent;
-						loadBlockModel();
-						break;
+			function setTransparent() {
+				transparent = !transparent;
+				loadBlockModel();
+			}
 
-				}
+			function setColor(grade) {
+				currentGrade = grade;
+				loadBlockModel();
 			}
 
 			function animate() {
